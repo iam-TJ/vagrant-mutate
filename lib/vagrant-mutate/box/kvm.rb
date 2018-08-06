@@ -10,7 +10,9 @@ module VagrantMutate
         @supported_input  = true
         @supported_output = true
         @image_format     = 'qcow2'
-        @image_name       = 'box-disk1.img'
+        @prefix_default   = 'box-disk'
+        @suffix_default   = '.img'
+        @suffixes         = /img$/
       end
 
       # TODO: implement these methods

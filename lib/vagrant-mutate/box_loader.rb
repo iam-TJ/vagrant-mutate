@@ -210,11 +210,11 @@ module VagrantMutate
         end
         # Handle single or multiple versions
         if metadata['versions'].nil?
-          @logger.info 'No versions provided by metadata, asuming version 0'
+          @logger.info 'No versions provided by metadata, assuming version 0'
           version = '0'
         elsif metadata['versions'].length > 1
           metadata['versions'].each do |metadata_version|
-            @logger.info 'Itterating available metadata versions for active version.'
+            @logger.info 'Iterating available metadata versions for active version.'
             next unless metadata_version['status'] == 'active'
             version = metadata_version['version']
           end
@@ -246,7 +246,7 @@ module VagrantMutate
       box_parent_dir = File.join(@env.boxes_path, name, version)
 
       if Dir.exist?(box_parent_dir)
-        providers = Dir.entries(box_parent_dir).reject { |entry| entry =~ /^\./ }
+        providers = Pathname.new(box_parent_dir).children(with_directory=false).select(&:directory?).map(&:to_s)
         @logger.info "Found potential providers #{providers}"
       else
         providers = []

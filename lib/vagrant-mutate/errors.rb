@@ -81,5 +81,9 @@ module VagrantMutate
     class MetadataNotFound < VagrantMutateError
       error_key(:metadata_not_found)
     end
+
+    class PathnamesNotExtracted < VagrantMutateError
+      error_key(:pathnames_not_extracted)
+    end
   end
 end

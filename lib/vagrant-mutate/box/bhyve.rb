@@ -9,7 +9,9 @@ module VagrantMutate
         @supported_input  = true
         @supported_output = true
         @image_format     = 'raw'
-        @image_name       = 'disk.img'
+        @prefix_default   = 'disk'
+        @suffix_default   = '.img'
+        @suffixes         = /img$/
       end
 
       # TODO

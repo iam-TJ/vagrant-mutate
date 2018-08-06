@@ -6,11 +6,11 @@ require 'vagrant-mutate/version'
 Gem::Specification.new do |spec|
   spec.name          = "vagrant-mutate"
   spec.version       = VagrantMutate::VERSION
-  spec.authors       = ["Brian Pitts"]
-  spec.email         = ["brian@polibyte.com"]
+  spec.authors       = ["Brian Pitts", "Tj"]
+  spec.email         = ["brian@polibyte.com", "hacker@iam.tj"]
   spec.description   = %q{Convert vagrant boxes to work with different providers}
   spec.summary       = spec.description
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/iam-TJ/vagrant-mutate"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

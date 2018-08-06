@@ -10,11 +10,25 @@ module VagrantMutate
         @supported_input  = true
         @supported_output = false
         @image_format     = 'vmdk'
+        @prefix_default   = 'box-disk'
+        @suffix_default   = '.vmdk'
+        @suffixes         = /vmdk$/
       end
 
       # this is usually box-disk1.vmdk but some tools like packer customize it
-      def image_name
-        ovf.xpath("//*[local-name()='References']/*[local-name()='File']")[0].attribute("href").value
+      # return the next available filename on each invocation
+      def image_name_input
+        index = 0
+        files = ovf.xpath("//*[local-name()='References']/*[local-name()='File']")
+        lambda do
+          if files[index]
+            tmp = @pathnames[index] = Pathname.new(@dir).join(files[index].attribute("href").value)
+            index += 1
+            return tmp
+          else
+            return nil
+          end
+        end
       end
 
       # the architecture is not defined in the ovf file,

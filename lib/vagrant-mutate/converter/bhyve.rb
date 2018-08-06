@@ -3,9 +3,9 @@ require 'erb'
 module VagrantMutate
   module Converter
     class Bhyve < Converter
-      def generate_metadata
+      def generate_metadata(index)
 
-        output_name = File.join(@output_box.dir, @output_box.image_name).shellescape
+        output_name = File.join(@output_box.dir, @pathnames[index][1]).to_s.shellescape
 
         file_output = `file #{output_name}`
 

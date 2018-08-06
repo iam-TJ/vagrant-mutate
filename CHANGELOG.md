@@ -1,3 +1,8 @@
+# 1.2.1-tj (2018-08-01)
+* This version forked and released by Tj via https://github.com/iam-TJ/vagrant-mutate
+* Add support for converting boxes containing multiple disk images
+* updated test/expected_output for virtualbox-to-{libvirt,kvm} due to qemu-img version 2.11.1
+
 # 1.2.0 (2016-08-15)
 * Add support for converting to bhyve (#86)
 

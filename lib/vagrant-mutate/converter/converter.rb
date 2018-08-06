@@ -26,6 +26,7 @@ module VagrantMutate
         @output_box = output_box
         @force_virtio = force_virtio
         @logger = Log4r::Logger.new('vagrant::mutate')
+        @pathnames = []
       end
 
       def convert
@@ -35,8 +36,15 @@ module VagrantMutate
 
         @env.ui.info "Converting #{@input_box.name} from #{@input_box.provider_name} "\
           "to #{@output_box.provider_name}."
-
-        @input_box.verify_format
+        in_lambda = @input_box.image_name('input')
+        out_lambda = @output_box.image_name('output')
+        until (image_name_tmp = in_lambda.call) == nil do
+          @pathnames += [[image_name_tmp, out_lambda.call ]]
+          @logger.debug "@pathnames=#{@pathnames}"  
+        end
+        for index in 0..@pathnames.length-1 do
+          @input_box.verify_format(index)
+        end
         write_disk
         write_metadata
         write_vagrantfile
@@ -46,7 +54,10 @@ module VagrantMutate
       private
 
       def write_metadata
-        metadata = generate_metadata
+        metadata = {}
+        for index in 0..@pathnames.length-1
+          metadata.merge!(generate_metadata(index))
+        end
         begin
           File.open(File.join(@output_box.dir, 'metadata.json'), 'w') do |f|
             f.write(JSON.generate(metadata))
@@ -80,19 +91,24 @@ module VagrantMutate
       end
 
       def copy_disk
-        input = File.join(@input_box.dir, @input_box.image_name)
-        output = File.join(@output_box.dir, @output_box.image_name)
+        fail Errors::PathnamesNotExtracted, error_message: "copy_disk" if @pathnames.length == 0
+        @pathnames.each { |file_in, file_out|
+        input = file_in.to_s.shellescape
+        output = file_out.to_s.shellescape
         @logger.info "Copying #{input} to #{output}"
         begin
           FileUtils.copy_file(input, output)
         rescue => e
           raise Errors::WriteDiskFailed, error_message: e.message
         end
+        }
       end
 
       def convert_disk
-        input_file    = File.join(@input_box.dir, @input_box.image_name).shellescape
-        output_file   = File.join(@output_box.dir, @output_box.image_name).shellescape
+        fail Errors::PathnamesNotExtracted, error_message: "convert_disk" if @pathnames.length == 0
+        @pathnames.each { |file_in, file_out|
+        input_file = file_in.to_s.shellescape
+        output_file   = file_out.to_s.shellescape
         output_format = @output_box.image_format
 
         # p for progress bar
@@ -110,6 +126,7 @@ module VagrantMutate
         unless system(command)
           fail Errors::WriteDiskFailed, error_message: "qemu-img exited with status #{$CHILD_STATUS.exitstatus}"
         end
+        }
       end
     end
   end

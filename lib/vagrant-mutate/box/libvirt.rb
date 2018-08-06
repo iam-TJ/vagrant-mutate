@@ -1,4 +1,5 @@
 require_relative 'box'
+require 'shellwords'
 
 module VagrantMutate
   module Box
@@ -9,8 +10,10 @@ module VagrantMutate
         @supported_input  = true
         @supported_output = true
         @image_format     = 'qcow2'
-        @image_name       = 'box.img'
         @mac              = nil
+        @prefix_default   = 'box'
+        @suffix_default   = '.img'
+        @suffixes         = /(qcow|qcow.|img)$/
       end
 
       # since none of below can be determined from the box

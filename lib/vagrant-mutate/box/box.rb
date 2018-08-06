@@ -11,22 +11,23 @@ module VagrantMutate
         @dir     = dir
         @version = version
         @logger  = Log4r::Logger.new('vagrant::mutate')
+        @pathnames = []
       end
 
-      def virtual_size
-        extract_from_qemu_info(/(\d+) bytes/)
+      def virtual_size(index)
+        extract_from_qemu_info(index, /(\d+) bytes/)
       end
 
-      def verify_format
-        format_found = extract_from_qemu_info(/file format: (\w+)/)
+      def verify_format(index)
+        format_found = extract_from_qemu_info(index, /file format: (\w+)/)
         unless format_found == @image_format
           @env.ui.warn "Expected input image format to be #{@image_format} but "\
             "it is #{format_found}. Attempting conversion anyway."
         end
       end
 
-      def extract_from_qemu_info(expression)
-        input_file = File.join(@dir, image_name).shellescape
+      def extract_from_qemu_info(index, expression)
+        input_file = @pathnames[index].to_s.shellescape
         info = `qemu-img info #{input_file}`
         @logger.debug "qemu-img info output\n#{info}"
         if info =~ expression
@@ -35,6 +36,38 @@ module VagrantMutate
           fail Errors::QemuInfoFailed
         end
       end
-    end
+
+      # generate an incrementing name on each invocation
+      def image_name_output
+        # start from 1 so virtualbox doesn't need to over-ride this method
+        index = 1
+        lambda do
+          tmp = @pathnames[index-1] = Pathname.new(@dir).join("#{@prefix_default}#{index}#{@suffix_default}")
+          index += 1
+          return tmp
+        end
+      end
+
+      # obtain all the valid names but return only 1 per invocation
+      def image_name_input
+        index = 0
+        @pathnames = Pathname.new(@dir).children.select {|f|
+          f.file? && f.to_s.match(@suffixes)
+        }  if @pathnames.length == 0
+        lambda do
+          tmp = @pathnames[index]
+          index += 1
+          return tmp
+        end
+      end
+
+      def image_name(type='input')
+        if type == 'input'
+          return image_name_input
+        else
+          return image_name_output
+        end
+      end
+   end
   end
 end

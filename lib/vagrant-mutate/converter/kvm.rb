@@ -3,7 +3,7 @@ require 'erb'
 module VagrantMutate
   module Converter
     class Kvm < Converter
-      def generate_metadata
+      def generate_metadata(index)
         { 'provider' => @output_box.provider_name }
       end
 
@@ -25,7 +25,7 @@ module VagrantMutate
         end
 
         image_type = @output_box.image_format
-        disk = @output_box.image_name
+        pathnames = @pathnames
 
         name = @input_box.name
         memory = @input_box.memory / 1024 # convert bytes to kib
